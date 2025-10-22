@@ -20,15 +20,7 @@ public class ContactListActivity extends AppCompatActivity {
         binding = ActivityContactListBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // Configurar lista
-        var db = AppDatabaseSingleton.getInstance(this);
-        List<Contact> contactList = db.contactDao().getAllContacts();
-
-        binding.recyclerContacts.setLayoutManager(new LinearLayoutManager(this));
-        binding.recyclerContacts.setAdapter(new ContactAdapter(contactList));
-
-        // Mostrar texto si no hay contactos
-        updateEmptyState(contactList);
+        updateList();
 
         // Botón para agregar contacto
         binding.fabAdd.setOnClickListener(v ->
@@ -39,11 +31,24 @@ public class ContactListActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Refrescar lista al volver desde AddContactActivity
+        updateList();
+    }
+
+    private void updateList() {
         var db = AppDatabaseSingleton.getInstance(this);
-        List<Contact> updatedList = db.contactDao().getAllContacts();
-        binding.recyclerContacts.setAdapter(new ContactAdapter(updatedList));
-        updateEmptyState(updatedList);
+        List<Contact> contactList = db.contactDao().getAllContacts();
+
+        binding.recyclerContacts.setLayoutManager(new LinearLayoutManager(this));
+        binding.recyclerContacts.setAdapter(new ContactAdapter(contactList, this));
+
+        updateEmptyState(contactList);
+
+        // Ocultar el botón si hay 5 o más contactos
+        if (contactList.size() >= 5) {
+            binding.fabAdd.hide();
+        } else {
+            binding.fabAdd.show();
+        }
     }
 
     private void updateEmptyState(List<Contact> list) {

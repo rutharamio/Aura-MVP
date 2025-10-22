@@ -3,13 +3,14 @@ package com.example.aura.ui;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.room.Room;
+import androidx.appcompat.app.AlertDialog;
 
 import com.example.aura.data.AppDatabase;
 import com.example.aura.data.entities.Contact;
 import com.example.aura.databinding.ActivityAddContactBinding;
+
+import java.util.List;
 
 public class AddContactActivity extends AppCompatActivity {
 
@@ -22,12 +23,8 @@ public class AddContactActivity extends AppCompatActivity {
         binding = ActivityAddContactBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // 🧱 Crear o abrir la base de datos Room
-        db = Room.databaseBuilder(getApplicationContext(),
-                        AppDatabase.class, "contactdata")
-                .allowMainThreadQueries() // solo para pruebas
-                .fallbackToDestructiveMigration() // fuerza recreación si hay cambios
-                .build();
+        // Crear o abrir la base de datos Room (singleton)
+        db = com.example.aura.data.AppDatabaseSingleton.getInstance(this);
 
         binding.saveButton.setOnClickListener(v -> {
             String name = binding.nameInput.getText().toString();
@@ -40,27 +37,41 @@ public class AddContactActivity extends AppCompatActivity {
                 return;
             }
 
-            try {
-                Contact contact = new Contact();
-                contact.name = name;
-                contact.phone = phone;
-                contact.relation = relation;
-                contact.priority = priority;
+            // Mostrar confirmación antes de guardar
+            new AlertDialog.Builder(this)
+                    .setTitle("Guardar contacto")
+                    .setMessage("¿Deseas guardar este contacto de emergencia?")
+                    .setPositiveButton("Sí", (dialog, which) -> {
+                        // Verificar cantidad actual de contactos
+                        List<Contact> allContacts = db.contactDao().getAllContacts();
+                        if (allContacts.size() >= 5) {
+                            Toast.makeText(this, "Solo se permiten 5 contactos de emergencia", Toast.LENGTH_LONG).show();
+                            return;
+                        }
 
-                db.contactDao().insert(contact);
+                        try {
+                            Contact contact = new Contact();
+                            contact.name = name;
+                            contact.phone = phone;
+                            contact.relation = relation;
+                            contact.priority = priority;
 
-                // 🔍 Verificar si se insertó correctamente
-                int total = db.contactDao().getAllContacts().size();
-                Log.d("ROOM_TEST", "✅ Contacto insertado: " + name);
-                Log.d("ROOM_TEST", "👥 Total de contactos en DB: " + total);
+                            db.contactDao().insert(contact);
 
-                Toast.makeText(this, "Contacto guardado correctamente", Toast.LENGTH_SHORT).show();
-                finish();
+                            int total = db.contactDao().getAllContacts().size();
+                            Log.d("ROOM_TEST", "Contacto insertado: " + name);
+                            Log.d("ROOM_TEST", "Total de contactos en DB: " + total);
 
-            } catch (Exception e) {
-                Log.e("ROOM_ERROR", "❌ Error al insertar contacto: " + e.getMessage());
-                Toast.makeText(this, "Error al guardar contacto", Toast.LENGTH_SHORT).show();
-            }
+                            Toast.makeText(this, "Contacto guardado correctamente", Toast.LENGTH_SHORT).show();
+                            finish();
+
+                        } catch (Exception e) {
+                            Log.e("ROOM_ERROR", "Error al insertar contacto: " + e.getMessage());
+                            Toast.makeText(this, "Error al guardar contacto", Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss())
+                    .show();
         });
     }
 }

@@ -8,7 +8,7 @@
     android:background="#F9F9F9"
     tools:context=".ui.ContactListActivity">
 
-    <!-- 🔹 Título -->
+    <!-- Título -->
     <TextView
         android:id="@+id/titleText"
         android:layout_width="wrap_content"
@@ -22,7 +22,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="24dp" />
 
-    <!-- 🔹 Texto si no hay contactos -->
+    <!-- Texto si no hay contactos -->
     <TextView
         android:id="@+id/emptyText"
         android:layout_width="wrap_content"
@@ -36,7 +36,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp" />
 
-    <!-- 🔹 Lista de contactos -->
+    <!-- Lista de contactos -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerContacts"
         android:layout_width="0dp"
@@ -47,7 +47,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- 🔹 Botón flotante para agregar -->
+    <!-- Botón flotante para agregar -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabAdd"
         android:layout_width="wrap_content"

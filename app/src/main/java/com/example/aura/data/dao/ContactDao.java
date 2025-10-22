@@ -19,4 +19,9 @@ public interface ContactDao {
 
     @Delete
     void delete(Contact contact);
+
+    @Query("SELECT * FROM contacts WHERE priority = '1' OR priority = 'Alta' ORDER BY id ASC LIMIT 3")
+    List<Contact> getContactsForAlert();
+
+
 }
