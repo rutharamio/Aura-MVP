@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
+import com.example.aura.R;  // ✅ debe existir
 
 import androidx.core.app.NotificationCompat;
 
@@ -19,6 +20,13 @@ public class EmergencyService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle("Emergencia activada")
+                .setContentText("Servicio en primer plano activo")
+                .setSmallIcon(R.drawable.ic_alert)
+                .build();
+
+        startForeground(1, notification);
         createChannel();
         Log.d(TAG, "onCreate");
     }

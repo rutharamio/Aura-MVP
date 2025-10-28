@@ -7,8 +7,10 @@
     <uses-permission android:name="android.permission.SEND_SMS" />
     <uses-feature android:name="android.hardware.telephony" android:required="false" />
 
-    <uses-permission android:name="android.permission.INTERNET" /> <!-- Permiso recomendado para servicios en primer plano -->
+    <uses-permission android:name="android.permission.INTERNET" /> <!-- Pe<uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />rmiso recomendado para servicios en primer plano -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+
 
 
 
