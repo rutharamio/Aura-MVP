@@ -1,14 +1,15 @@
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.secrets.gradle.plugin)
 }
 
 android {
     namespace = "com.example.aura"
-    compileSdk = 36
+    compileSdk = 34 // ✅ Usa 34 (estable y compatible con Maps y Room)
 
     defaultConfig {
         applicationId = "com.example.aura"
-        minSdk = 26
+        minSdk = 29
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -25,6 +26,7 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -33,7 +35,6 @@ android {
     buildFeatures {
         viewBinding = true
     }
-
 }
 
 dependencies {
@@ -52,5 +53,4 @@ dependencies {
     // GOOGLE MAPS y LOCALIZACIÓN
     implementation("com.google.android.gms:play-services-maps:18.2.0")
     implementation("com.google.android.gms:play-services-location:21.2.0")
-
 }
