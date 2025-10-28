@@ -1,24 +1,28 @@
 package com.example.aura.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Button;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+import androidx.core.content.ContextCompat;
 
 import com.example.aura.R;
+import com.example.aura.services.EmergencyService;
 
 public class EmergencyModuleActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_emergency_module);
 
+        Button btnStartService = findViewById(R.id.btnStartService);
+        btnStartService.setOnClickListener(v -> {
+            Intent serviceIntent = new Intent(this, EmergencyService.class);
+            ContextCompat.startForegroundService(this, serviceIntent);
+        });
     }
-
 }
+
 
