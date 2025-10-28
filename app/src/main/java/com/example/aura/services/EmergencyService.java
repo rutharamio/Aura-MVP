@@ -8,87 +8,64 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
-import androidx.annotation.Nullable;
+
 import androidx.core.app.NotificationCompat;
 
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
-import android.location.Location;
-import android.content.Context;
-
-import com.example.aura.utils.WhatsAppUtils;
-
 public class EmergencyService extends Service {
-    private static final String TAG = "EmergencyService";
-    private static final String CHANNEL_ID = "aura_emergency_channel";
-    private FusedLocationProviderClient fusedLocationClient;
+    public static final String TAG = "EmergencyService";
+    public static final String CHANNEL_ID = "aura_emergency_channel";
+    private static final int NOTIF_ID = 1001;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        createNotificationChannel();
-        startForeground(1, buildNotification("Activando alerta discreta..."));
-        fetchLocationAndSend();
+        createChannel();
+        Log.d(TAG, "onCreate");
     }
 
-    private void fetchLocationAndSend() {
-        try {
-            fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
-                if (location != null) {
-                    double lat = location.getLatitude();
-                    double lon = location.getLongitude();
-                    Log.d(TAG, "Location: " + lat + "," + lon);
-
-                    // TODO: reemplazar por lista de contactos desde Room (cuando Ruth lo exponga)
-                    String phone = "+595971323111";
-                    WhatsAppUtils.sendAlert(getApplicationContext(), phone, lat, lon);
-
-                    // TODO: guardar reporte en DB usando ReportRepository cuando Ruth lo tenga
-                    Log.d(TAG, "Reporte guardado (simulado) - lat: " + lat + " lon: " + lon);
-                } else {
-                    Log.w(TAG, "Ubicación nula: revisar permisos o solicitar ubicación activa.");
-                }
-                stopSelf();
-            }).addOnFailureListener(e -> {
-                Log.e(TAG, "Error obteniendo ubicación: " + e.getMessage(), e);
-                stopSelf();
-            });
-        } catch (SecurityException e) {
-            Log.e(TAG, "Permiso de ubicación faltante", e);
-            stopSelf();
-        }
-    }
-
-    private Notification buildNotification(String text) {
-        return new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("Aura - Alerta discreta")
-                .setContentText(text)
-                .setSmallIcon(android.R.drawable.ic_dialog_alert)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .build();
-    }
-
-    private void createNotificationChannel() {
+    private void createChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            CharSequence name = "Aura emergency";
-            String description = "Canal para alertas discretas de Aura";
-            int importance = NotificationManager.IMPORTANCE_HIGH;
-            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
-            channel.setDescription(description);
-            NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            if (nm != null) nm.createNotificationChannel(channel);
+            NotificationChannel ch = new NotificationChannel(
+                    CHANNEL_ID,
+                    "Aura - Servicio de emergencia",
+                    NotificationManager.IMPORTANCE_LOW
+            );
+            ch.setDescription("Servicio en primer plano usado para enviar alertas y obtener ubicación");
+            NotificationManager nm = getSystemService(NotificationManager.class);
+            if (nm != null) nm.createNotificationChannel(ch);
         }
+    }
+
+    private Notification buildNotification() {
+        return new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle("Aura - Servicio activo")
+                .setContentText("Monitor de emergencia en segundo plano")
+                .setSmallIcon(android.R.drawable.ic_dialog_alert) // poné tu propio icono si tenés
+                .setPriority(NotificationCompat.PRIORITY_LOW)
+                .setOngoing(true)
+                .build();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        // ya inicializamos en onCreate
-        return START_NOT_STICKY;
+        Log.d(TAG, "onStartCommand: iniciando foreground");
+        startForeground(NOTIF_ID, buildNotification());
+
+        // TODO: arrancar tracking de ubicación o lógica de alerta
+        // por ejemplo: startLocationUpdates();
+
+        return START_STICKY;
     }
 
-    @Nullable
     @Override
-    public IBinder onBind(Intent intent) { return null; }
+    public void onDestroy() {
+        Log.d(TAG, "onDestroy");
+        super.onDestroy();
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
 }
 

@@ -4,44 +4,37 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
+
+import com.example.aura.services.EmergencyService;
 
 public class PowerButtonReceiver extends BroadcastReceiver {
     private static final String TAG = "PowerButtonReceiver";
-    private static long lastPressTime = 0;
-    private static int pressCount = 0;
-    private static final long WINDOW_MS = 1500; // 1.5s para agrupar presiones
+
+    // Para conteo de pulsaciones
+    private static int count = 0;
+    private static final long WINDOW_MS = 2000; // 2 segundos para agrupar
+    private static Handler handler = new Handler();
+    private static final Runnable reset = () -> count = 0;
 
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
+        Log.d(TAG, "onReceive: " + action);
         if (Intent.ACTION_SCREEN_OFF.equals(action) || Intent.ACTION_SCREEN_ON.equals(action)) {
-            long now = System.currentTimeMillis();
+            count++;
+            handler.removeCallbacks(reset);
+            handler.postDelayed(reset, WINDOW_MS);
 
-            if (now - lastPressTime <= WINDOW_MS) {
-                pressCount++;
-            } else {
-                pressCount = 1;
+            if (count >= 3) { // triple press
+                Log.d(TAG, "Triple press detectado -> iniciar EmergencyService");
+                // arrancar servicio en foreground
+                Intent svc = new Intent(context, EmergencyService.class);
+                svc.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                context.startForegroundService(svc);
+                // reset
+                count = 0;
             }
-            lastPressTime = now;
-
-            Log.d(TAG, "Power press detected. count=" + pressCount);
-
-            if (pressCount >= 3) {
-                pressCount = 0;
-                // Lanzar el servicio de emergencia
-                Intent serviceIntent = new Intent(context, com.example.aura.services.EmergencyService.class);
-                try {
-                    // Start foreground service on Android O+
-                    context.startForegroundService(serviceIntent);
-                } catch (Exception e) {
-                    context.startService(serviceIntent);
-                }
-            }
-
-            // reset por seguridad después de la ventana
-            new Handler(Looper.getMainLooper()).postDelayed(() -> pressCount = 0, WINDOW_MS + 100);
         }
     }
 }

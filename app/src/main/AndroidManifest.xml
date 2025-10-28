@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-
     <!-- Permisos necesarios para el módulo de emergencia -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.SEND_SMS" />
-    <uses-permission android:name="android.permission.INTERNET" />
-    <!-- Permiso recomendado para servicios en primer plano -->
+    <uses-feature android:name="android.hardware.telephony" android:required="false" />
+
+    <uses-permission android:name="android.permission.INTERNET" /> <!-- Permiso recomendado para servicios en primer plano -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+
 
     <application
         android:allowBackup="true"
@@ -19,29 +21,24 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Aura">
-
+        <activity
+            android:name=".ui.EmergencyModuleActivity"
+            android:exported="false" />
         <!-- Pantalla principal -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-
-        <!-- Pantalla para agregar contactos -->
-        <activity android:name=".ui.AddContactActivity" />
-
-        <!-- Pantalla para ver la lista de contactos -->
-        <activity android:name=".ui.ContactListActivity" />
-
-        <!-- Activity para solicitar permisos (Sofi) -->
+        </activity> <!-- Pantalla para agregar contactos -->
+        <activity android:name=".ui.AddContactActivity" /> <!-- Pantalla para ver la lista de contactos -->
+        <activity android:name=".ui.ContactListActivity" /> <!-- Activity para solicitar permisos (Sofi) -->
         <activity
             android:name=".ui.PermissionActivity"
-            android:exported="false" />
-
-        <!-- Receiver que detecta el botón de encendido (Sofi) -->
+            android:exported="false" /> <!-- Receiver que detecta el botón de encendido (Sofi) -->
         <receiver
             android:name=".receivers.PowerButtonReceiver"
             android:exported="false">
@@ -49,19 +46,14 @@
                 <action android:name="android.intent.action.SCREEN_ON" />
                 <action android:name="android.intent.action.SCREEN_OFF" />
             </intent-filter>
-        </receiver>
-
-        <!-- Servicio en primer plano para emergencias (Sofi) -->
+        </receiver> <!-- Servicio en primer plano para emergencias (Sofi) -->
         <service
             android:name=".services.EmergencyService"
             android:exported="false"
-            android:foregroundServiceType="location" />
-
-        <!-- Clave de Google Maps (Ana la agregará más adelante) -->
+            android:foregroundServiceType="location" /> <!-- Clave de Google Maps (Ana la agregará más adelante) -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="TU_API_KEY_AQUI" />
-
     </application>
 
 </manifest>

@@ -8,11 +8,16 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.aura.ui.AddContactActivity;
 import com.example.aura.ui.ContactListActivity;
+import com.example.aura.ui.EmergencyModuleActivity;
+
 
 public class MainActivity extends AppCompatActivity {
 
     private Button btnAddContact;
     private Button btnViewContacts;
+    private Button btnEmergency;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,5 +39,12 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(MainActivity.this, ContactListActivity.class);
             startActivity(intent);
         });
+        btnEmergency = findViewById(R.id.btnEmergency);
+
+        btnEmergency.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, EmergencyModuleActivity.class);
+            startActivity(intent);
+        });
+
     }
 }
