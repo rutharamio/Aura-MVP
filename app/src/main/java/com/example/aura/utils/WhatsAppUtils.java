@@ -9,8 +9,7 @@ public class WhatsAppUtils {
     private static final String TAG = "WhatsAppUtils";
 
     public static void sendAlert(Context context, String phoneWithCountryCode, double lat, double lon) {
-        String message = "¡ALERTA! Tu contacto Aura necesita ayuda. Ubicación: " +
-                "https://maps.google.com/?q=" + lat + "," + lon;
+        String message = "¡ALERTA! Necesito ayuda. Mi ubicación es: https://maps.google.com/?q=" + lat + "," + lon;
         String url = "https://wa.me/" + phoneWithCountryCode.replace("+","") + "?text=" + Uri.encode(message);
         try {
             Intent intent = new Intent(Intent.ACTION_VIEW);
@@ -23,4 +22,3 @@ public class WhatsAppUtils {
         }
     }
 }
-
