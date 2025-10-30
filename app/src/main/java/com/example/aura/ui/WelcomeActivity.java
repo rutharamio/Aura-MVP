@@ -3,7 +3,10 @@ package com.example.aura.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.aura.MainActivity;
@@ -27,6 +30,10 @@ public class WelcomeActivity extends AppCompatActivity {
         }
 
         setContentView(R.layout.activity_welcome);
+
+        TextView titleAura = findViewById(R.id.textTitleAura); // asegúrate que este id coincida con tu TextView
+        Animation fadeInBounce = AnimationUtils.loadAnimation(this, R.anim.fade_in_bounce);
+        titleAura.startAnimation(fadeInBounce);
 
         Button btnLogin = findViewById(R.id.btnLogin);
         Button btnRegister = findViewById(R.id.btnRegister);
