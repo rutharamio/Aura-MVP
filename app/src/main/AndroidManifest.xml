@@ -46,9 +46,10 @@
             android:exported="false" /> <!-- Receiver que detecta el botón de encendido (Sofi) -->
         <receiver
             android:name=".receivers.PowerButtonReceiver"
-            android:exported="false">
+            android:exported="false"
+            android:directBootAware="true">
             <intent-filter>
-                <action android:name="android.intent.action.SCREEN_ON" />
+
                 <action android:name="android.intent.action.SCREEN_OFF" />
             </intent-filter>
         </receiver> <!-- Servicio en primer plano para emergencias (Sofi) -->
