@@ -9,31 +9,49 @@ import android.util.Log;
 import com.example.aura.services.EmergencyService;
 
 public class PowerButtonReceiver extends BroadcastReceiver {
+
     private static final String TAG = "PowerButtonReceiver";
 
-    private static int pressCount = 0;
-    private static final long TIME_WINDOW = 1500; // 1.5 segundos
-    private static Handler handler = new Handler();
+    // Contador de eventos de power (screen on/off)
+    private static int powerEventCount = 0;
 
-    private static final Runnable resetCounter = () -> pressCount = 0;
+    // Ventana de tiempo para detectar el patrón
+    private static final long WINDOW_MS = 5000; // 2 segundos
+    private static final Handler handler = new Handler();
+    private static final Runnable resetCounter = () -> {
+        Log.d(TAG, "⏱️ Se reinició el contador");
+        powerEventCount = 0;
+    };
 
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
-        Log.d(TAG, "Acción detectada: " + action);
+        Log.d(TAG, "➡️ Acción recibida: " + action);
 
-        if (Intent.ACTION_USER_PRESENT.equals(action)) {
-            pressCount++;
+        if (action.equals(Intent.ACTION_SCREEN_OFF) || action.equals(Intent.ACTION_SCREEN_ON)) {
+
+            powerEventCount++;
+            Log.d(TAG, "🔄 Conteo de presiones: " + powerEventCount);
+
+            // Reiniciar la ventana de detección
             handler.removeCallbacks(resetCounter);
-            handler.postDelayed(resetCounter, TIME_WINDOW);
+            handler.postDelayed(resetCounter, WINDOW_MS);
 
-            if (pressCount >= 3) {
-                Log.d(TAG, "Triple desbloqueo detectado → Iniciando servicio");
+            // Si llegó a 4 eventos → significa power 2 veces (off/on/off/on)
+            if (powerEventCount >= 4) {
+                Log.d(TAG, "🚨 Doble power detectado → Iniciando EmergencyService");
+
                 Intent svc = new Intent(context, EmergencyService.class);
-                svc.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                context.startForegroundService(svc);
-                pressCount = 0;
+                try {
+                    context.startForegroundService(svc);
+                } catch (Exception e) {
+                    Log.e(TAG, "❌ Error iniciando servicio", e);
+                }
+
+                powerEventCount = 0; // Reset
             }
         }
     }
 }
+
+
