@@ -7,6 +7,7 @@ plugins {
 android {
     namespace = "com.example.aura"
     compileSdk = 36
+    //36 aun no es estable y se configura con 36 por defecto parece
 
     defaultConfig {
         applicationId = "com.example.aura"

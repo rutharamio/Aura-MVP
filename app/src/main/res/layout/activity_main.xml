@@ -17,7 +17,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Contenedor de botones (Contactos) -->
+    <!-- Contenedor de botones -->
     <LinearLayout
         android:id="@+id/btnContainer"
         android:layout_width="match_parent"
@@ -35,14 +35,20 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Agregar contacto"
-            android:layout_marginBottom="12dp"/>
+            android:layout_marginBottom="12dp" />
 
         <Button
             android:id="@+id/btnViewContacts"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Ver contactos"/>
+            android:text="Ver contactos"
+            android:layout_marginBottom="12dp" />
 
+        <Button
+            android:id="@+id/btnEmergency"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🚨 Módulo de emergencia" />
     </LinearLayout>
 
     <!-- Botón para re-centrar el mapa -->
