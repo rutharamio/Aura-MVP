@@ -11,35 +11,28 @@ import com.example.aura.services.EmergencyService;
 public class PowerButtonReceiver extends BroadcastReceiver {
     private static final String TAG = "PowerButtonReceiver";
 
-    private static int count = 0;
-    private static final long WINDOW_MS = 2500; // 2.5s para agrupar
-    private static final Handler handler = new Handler();
-    private static final Runnable reset = () -> count = 0;
+    private static int pressCount = 0;
+    private static final long TIME_WINDOW = 1500; // 1.5 segundos
+    private static Handler handler = new Handler();
+
+    private static final Runnable resetCounter = () -> pressCount = 0;
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        String action = intent.getAction();
+        Log.d(TAG, "Acción detectada: " + action);
 
-        if (Intent.ACTION_SCREEN_OFF.equals(intent.getAction())) {
+        if (Intent.ACTION_USER_PRESENT.equals(action)) {
+            pressCount++;
+            handler.removeCallbacks(resetCounter);
+            handler.postDelayed(resetCounter, TIME_WINDOW);
 
-            count++;
-            Log.d(TAG, "Pantalla apagada. Conteo: " + count);
-
-            handler.removeCallbacks(reset);
-            handler.postDelayed(reset, WINDOW_MS);
-
-            if (count >= 3) {
-                Log.d(TAG, "Triple apagado detectado → iniciar EmergencyService");
-
+            if (pressCount >= 3) {
+                Log.d(TAG, "Triple desbloqueo detectado → Iniciando servicio");
                 Intent svc = new Intent(context, EmergencyService.class);
                 svc.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-                try {
-                    context.startForegroundService(svc); // Android 8+
-                } catch (Exception e) {
-                    Log.e(TAG, "Error iniciando servicio", e);
-                }
-
-                count = 0;
+                context.startForegroundService(svc);
+                pressCount = 0;
             }
         }
     }
