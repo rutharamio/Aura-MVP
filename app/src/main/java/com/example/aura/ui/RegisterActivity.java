@@ -8,10 +8,11 @@ import android.widget.EditText;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.aura.MainActivity; // ¡Importante! Necesitamos la referencia a MainActivity
+import com.example.aura.MainActivity;
 import com.example.aura.R;
+import com.example.aura.core.AuthManager;
 import com.example.aura.core.PasswordHasher;
-import com.example.aura.core.Prefs; // ¡Importante! Necesitamos Prefs para guardar la sesión
+import com.example.aura.core.Prefs;
 import com.example.aura.data.AppDatabase;
 import com.example.aura.data.entities.User;
 
@@ -59,61 +60,57 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.execute(() -> {
-            try {
-                // 1. Verificar si el email ya existe
-                User existingUser = db.userDao().findByEmail(email);
-                if (existingUser != null) {
-                    showToast("El correo electrónico ya está registrado");
-                    return;
+        // ✅ Paso 1: Registrar en Firebase
+        AuthManager.register(email, password, this, () -> {
+            // Si Firebase lo registra correctamente → seguimos guardando localmente
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            executor.execute(() -> {
+                try {
+                    // 2. Verificar si ya existe en Room
+                    User existingUser = db.userDao().findByEmail(email);
+                    if (existingUser != null) {
+                        showToast("El correo electrónico ya está registrado localmente");
+                        return;
+                    }
+
+                    // 3. Hashear la contraseña y guardar localmente
+                    String passwordHash = PasswordHasher.hashPassword(password);
+
+                    User newUser = new User();
+                    newUser.name = name;
+                    newUser.email = email;
+                    newUser.passwordHash = passwordHash;
+                    long newUserId = db.userDao().insert(newUser);
+
+                    if (newUserId > 0) {
+                        // 4. Guardar sesión local con Prefs
+                        Prefs.saveUserSession(getApplicationContext(), (int) newUserId, newUser.name);
+                        showToast("¡Bienvenido, " + name + "! Registro exitoso ✅");
+
+                        // 5. Ir al mapa
+                        goToMain();
+                    } else {
+                        showToast("Error al registrar localmente");
+                    }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    showToast("Error en el registro: " + e.getMessage());
                 }
+            });
 
-                // 2. Hashear la contraseña
-                String passwordHash = PasswordHasher.hashPassword(password);
-
-                // 3. Crear y guardar el nuevo usuario
-                User newUser = new User();
-                newUser.name = name;
-                newUser.email = email;
-                newUser.passwordHash = passwordHash;
-                // Obtenemos el ID del nuevo usuario insertado
-                long newUserId = db.userDao().insert(newUser);
-
-                // ===================== CORRECCIÓN APLICADA AQUÍ =====================
-
-                // 4. Iniciar sesión automáticamente y redirigir a MainActivity
-                if (newUserId > 0) { // Verificamos que el usuario se insertó correctamente
-                    showToast("¡Bienvenido, " + newUser.name + "!");
-
-                    // 4.1. Guardar la sesión del nuevo usuario
-                    Prefs.saveUserSession(getApplicationContext(), (int) newUserId, newUser.name);
-
-                    // 4.2. Redirigir DIRECTAMENTE a MainActivity (el mapa)
-                    goToMain();
-
-                } else {
-                    showToast("Error: no se pudo completar el registro.");
-                }
-                // ======================= FIN DE LA CORRECCIÓN =======================
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                showToast("Error en el registro: " + e.getMessage());
-            }
+        }, () -> {
+            showToast("Error al registrar usuario en Firebase");
         });
     }
 
-    // Método de utilidad para ir a la pantalla principal
     private void goToMain() {
         Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
-        // Limpiamos el stack para que el usuario no pueda volver al registro o login
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
     }
 
-    // Método de utilidad para mostrar Toasts desde cualquier hilo
     private void showToast(final String message) {
         runOnUiThread(() -> Toast.makeText(RegisterActivity.this, message, Toast.LENGTH_SHORT).show());
     }
