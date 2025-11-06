@@ -8,9 +8,11 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.SEND_SMS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
     <uses-feature android:name="android.hardware.telephony" android:required="false" />
 
     <application
@@ -23,56 +25,56 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Aura">
 
-        <!-- 🗺️ Clave de Google Maps -->
+        <!-- ... Tus Activities y meta-data de Maps ... -->
+        <receiver
+            android:name=".receivers.PowerButtonReceiver"
+            android:enabled="true"
+            android:exported="false" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="${MAPS_API_KEY}" />
-
-        <!-- 🚀 Pantalla de bienvenida -->
-        <activity
-            android:name=".ui.WelcomeActivity"
-            android:exported="true">
+        <activity android:name=".ui.WelcomeActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <!-- 🗺️ Pantalla principal del mapa -->
         <activity android:name=".MainActivity" android:exported="false" />
-
-        <!-- 🔑 Pantalla de inicio de sesión -->
         <activity android:name=".ui.LoginActivity" android:exported="false" />
-
-        <!-- 📝 Pantalla de registro -->
         <activity android:name=".ui.RegisterActivity" android:exported="false" />
-
-        <!-- 📇 Módulo de contactos -->
         <activity android:name=".ui.AddContactActivity" android:exported="false" />
         <activity android:name=".ui.ContactListActivity" android:exported="false" />
-
-        <!-- ⚙️ Solicitud de permisos -->
         <activity android:name=".ui.PermissionActivity" android:exported="false" />
-
-        <!-- 🚨 Módulo de emergencia -->
         <activity android:name=".ui.EmergencyModuleActivity" android:exported="false" />
 
-        <!-- ⚡ Receiver del botón de encendido -->
+        <!-- Receiver del botón de encendido -->
         <receiver
-            android:name=".receivers.PowerButtonReceiver"
-            android:exported="false">
+            android:name=".receivers.BootReceiver"
+            android:enabled="true"
+            android:exported="true">
             <intent-filter>
-                <action android:name="android.intent.action.SCREEN_ON" />
-                <action android:name="android.intent.action.SCREEN_OFF" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
 
-        <!-- 🆘 Servicio de emergencia -->
+        <!-- ================== ÚLTIMA CORRECCIÓN AQUÍ ================== -->
+        <!-- Servicio de emergencia (con la declaración de tipos limpia) -->
         <service
             android:name=".services.EmergencyService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="location|dataSync" />
+        <!-- ========================================================== -->
+
+        <!-- Servicio guardián para el botón de pánico -->
+        <service
+            android:name=".services.PowerButtonService"
+            android:enabled="true"
+            android:exported="false">
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Your app runs a service to monitor for emergency button presses even when the app is in the background." />
+        </service>
+
     </application>
 
 </manifest>
